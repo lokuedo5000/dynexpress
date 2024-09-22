@@ -1,8 +1,11 @@
 const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const net = require("node:net");
 const Dynreload = require("../dist/dynreload");
-const dynreload = new Dynreload();
+const dynreload = new Dynreload({
+  silent: true,
+});
 
 class Dynexpress {
   constructor() {
@@ -28,7 +31,9 @@ class Dynexpress {
     }
 
     // Si no cumple ninguna de las condiciones, retorna un error
-    throw new Error("routers debe ser un array de rutas o una ruta válida de un archivo .js");
+    throw new Error(
+      "routers debe ser un array de rutas o una ruta válida de un archivo .js"
+    );
   }
 
   setupAppMiddleware(app, { pathViews, pathPublic }) {
@@ -47,7 +52,8 @@ class Dynexpress {
 
   async isPortAvailable(port) {
     return new Promise((resolve) => {
-      const tester = net.createServer()
+      const tester = net
+        .createServer()
         .once("error", () => resolve(false))
         .once("listening", () => {
           tester.close();
@@ -66,13 +72,15 @@ class Dynexpress {
     throw new Error(`No available port found after ${maxAttempts} attempts`);
   }
 
-  async newServer({ name, routers, port, pathViews = false, pathPublic = false }, urlcomplete = false) {
+  async newServer(
+    { name, routers, port, pathViews = false, pathPublic = false },
+    urlcomplete = false
+  ) {
     if (this.appInstances.has(name)) {
       return true;
     }
 
     try {
-
       // Verifica si routers es un array o un archivo de JS
       const routersType = this.isRoutersArrayOrFile(routers);
 
@@ -82,8 +90,17 @@ class Dynexpress {
         // Si es un array, usa Dynreload para precargar las rutas
         appRoutes = routers;
       } else if (routersType === "file") {
+        // Obtiene la ruta del archivo que invoca esta función
+        const invokingFilePath = this.getCallerFile();
+        if (!invokingFilePath) {
+          throw new Error(
+            "No se pudo determinar el archivo que invoca dynreload"
+          );
+        }
+
+        const invokingFileDir = path.dirname(invokingFilePath);
         // Si es un archivo .js, requiere ese archivo como un módulo que exporta las rutas
-        appRoutes = dynreload.preload(routers, { silent: true });
+        appRoutes = dynreload.preload(path.resolve(invokingFileDir, routers));
       }
 
       const availablePort = await this.findAvailablePort(port);
@@ -103,7 +120,9 @@ class Dynexpress {
         port: availablePort,
       });
 
-      return urlcomplete === "url" ? `http://localhost:${availablePort}/` : true;
+      return urlcomplete === "url"
+        ? `http://localhost:${availablePort}/`
+        : true;
     } catch (error) {
       console.error(`Error creating server ${name}:`, error);
       return false;
@@ -167,7 +186,34 @@ class Dynexpress {
 
     const { method, path, handler } = newRoute;
     instance.app[method.toLowerCase()](path, handler);
-    console.log(`New route added to ${serverName}: ${method.toUpperCase()} ${path}`);
+    console.log(
+      `New route added to ${serverName}: ${method.toUpperCase()} ${path}`
+    );
+  }
+
+  getCallerFile() {
+    const originalFunc = Error.prepareStackTrace;
+    let callerfile;
+    try {
+      const err = new Error();
+      let currentfile;
+
+      Error.prepareStackTrace = (_, stack) => stack;
+
+      currentfile = err.stack.shift().getFileName();
+
+      while (err.stack.length) {
+        callerfile = err.stack.shift().getFileName();
+
+        if (currentfile !== callerfile) break;
+      }
+    } catch (e) {
+      console.error("Error al obtener el archivo que llama:", e);
+    }
+
+    Error.prepareStackTrace = originalFunc;
+
+    return callerfile;
   }
 }
 
