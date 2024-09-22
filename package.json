@@ -1,0 +1,35 @@
+{
+  "name": "dynexpress",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node ./samples/dynreload.js",
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js"
+  },
+  "keywords": [
+    "express",
+    "node",
+    "dynamic",
+    "server",
+    "management"
+  ],
+  "author": "NodeCreativo",
+  "license": "MIT",
+  "description": "Dynexpress is a Node.js-based class that allows you to create and manage Express servers dynamically, making it easy to create, restart, and delete servers without stopping the entire application.",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.21.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lokuedo5000/dynexpress.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lokuedo5000/dynexpress/issues"
+  },
+  "homepage": "https://github.com/lokuedo5000/dynexpress#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

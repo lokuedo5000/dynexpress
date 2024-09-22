@@ -1,0 +1,31 @@
+{
+  "name": "dynreload",
+  "version": "1.0.0",
+  "main": "./src/main.js",
+  "scripts": {
+    "test": "node ./samples/test.js"
+  },
+  "keywords": [
+    "commonjs",
+    "node",
+    "preload",
+    "require"
+  ],
+  "author": "NodeCreativo",
+  "license": "MIT",
+  "description": "Dynreload is a Node.js module that provides dynamic reloading of CommonJS modules, allowing for easier development and testing.",
+  "devDependencies": {
+    "@types/node": "^22.5.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lokuedo5000/dynreload.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lokuedo5000/dynreload/issues"
+  },
+  "homepage": "https://github.com/lokuedo5000/dynreload#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
